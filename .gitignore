@@ -30,6 +30,7 @@ test/ct.cover.spec
 /priv/*.dll
 /priv/*.dylib
 /priv/*.so
+!/priv/releases/.keep
 /tmp
 *.ez
 geolite2data.d

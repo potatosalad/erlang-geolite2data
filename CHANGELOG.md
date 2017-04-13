@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.3 (2017-04-12)
+
+* Fixes
+  * Include `priv/releases` directory.
+
 ## 0.0.2 (2017-04-12)
 
 * Fixes
