@@ -13,7 +13,7 @@ Add `geolite2data` to your project's dependencies in `mix.exs`
 ```elixir
 defp deps do
   [
-    {:geolite2data, "~> 0.0.1"}
+    {:geolite2data, "~> 0.0.2"}
   ]
 end
 ```

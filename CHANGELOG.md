@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.2 (2017-04-12)
+
+* Fixes
+  * Support for [geolix 0.13+](https://github.com/elixir-geolix/geolix/releases/tag/v0.13.0).
+
 ## 0.0.1 (2016-05-23)
 
 * Initial Release

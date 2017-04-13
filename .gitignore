@@ -6,6 +6,7 @@ _*
 *.swp
 *.swo
 .erlang.cookie
+.erlang.mk
 .erlang.mk.packages.*
 ebin
 log

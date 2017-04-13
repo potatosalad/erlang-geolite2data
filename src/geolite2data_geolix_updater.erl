@@ -59,7 +59,7 @@ handle_info({'$geolite2data-event', {database, announce, Key, Filename}}, State=
 		Filename ->
 			{noreply, State};
 		_ ->
-			_ = set_database(Key, Filename),
+			_ = load_database(Key, Filename),
 			{noreply, State#state{databases=maps:put(Key, Filename, Databases)}}
 	end;
 handle_info(_Info, State) ->
@@ -81,17 +81,66 @@ code_change(_OldVsn, State, _Extra) ->
 %%%-------------------------------------------------------------------
 
 %% @private
-set_database(Key, Filename) ->
-	case code:ensure_loaded(elixir) of
-		{module, elixir} ->
-			case code:ensure_loaded('Elixir.Geolix') of
-				{module, 'Elixir.Geolix'} ->
-					_ = application:ensure_all_started(geolix),
-					'Elixir.Geolix':set_database(Key, to_string(Filename));
-				_ ->
-					ok
-			end;
-		_ ->
+detect_support(#{ adapter := Adapter }) ->
+	Res0 =
+		case code:ensure_loaded(elixir) of
+			{module, elixir} ->
+				case code:ensure_loaded('Elixir.Geolix') of
+					{module, 'Elixir.Geolix'} ->
+						continue;
+					_ ->
+						abort
+				end;
+			_ ->
+				abort
+		end,
+	Res1 =
+		case Res0 of
+			continue ->
+				case code:ensure_loaded(Adapter) of
+					{module, Adapter} ->
+						case erlang:function_exported('Elixir.Geolix', load_database, 1) of
+							true ->
+								load_database;
+							false ->
+								continue
+						end;
+					_ ->
+						continue
+				end;
+			Other0 ->
+				Other0
+		end,
+	Res2 =
+		case Res1 of
+			continue ->
+				case erlang:function_exported('Elixir.Geolix', set_database, 2) of
+					true ->
+						set_database;
+					false ->
+						abort
+				end;
+			Other1 ->
+				Other1
+		end,
+	Res2.
+
+%% @private
+load_database(Key, Filename) ->
+	Source = to_string(Filename),
+	Database = #{
+		id => Key,
+		adapter => 'Elixir.Geolix.Adapter.MMDB2',
+		source => Source
+	},
+	case detect_support(Database) of
+		load_database ->
+			_ = application:ensure_all_started(geolix),
+			'Elixir.Geolix':load_database(Database);
+		set_database ->
+			_ = application:ensure_all_started(geolix),
+			'Elixir.Geolix':set_database(Key, Source);
+		abort ->
 			ok
 	end.
 
