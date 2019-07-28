@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0 (2019-07-28)
+
+* License changed from MPL 2.0 to MIT.
+
+* Fixes
+  * Add support for non-gzipped databases (like `.zip`, see [#1](https://github.com/potatosalad/erlang-geolite2data/issues/1))
+
 ## 0.0.3 (2017-04-12)
 
 * Fixes

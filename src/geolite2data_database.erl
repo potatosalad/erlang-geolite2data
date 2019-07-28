@@ -83,7 +83,7 @@ handle_cast(_Request, State) ->
 handle_info({timeout, TimerReference, poll}, State=#state{name=idle, timer_reference=TimerReference}) ->
 	maybe_poll(State#state{timer_reference=undefined}, os:system_time(seconds));
 handle_info({http, {RequestId, saved_to_file}}, State=#state{name=wait, key=Key, request={RequestId, Digest, Filename}}) ->
-	case geolite2data_hash:file(md5, Filename, [compressed]) of
+	case geolite2data_hash:file(md5, Filename, maybe_compressed(Filename)) of
 		{ok, Digest} ->
 			ok = geolite2data_event:announce(Key, Filename),
 			{noreply, maybe_cleanup(State#state{release=Filename, request=undefined})};
@@ -196,7 +196,7 @@ is_release_outdated(State=#state{key=Key, digest_url=DigestURL}, Digests) ->
 list_release_digests(State, DataDir) ->
 	DatabaseDir = get_database_directory(State, DataDir),
 	Folder = fun(Filename, Acc) ->
-		try geolite2data_hash:file(md5, Filename, [compressed]) of
+		try geolite2data_hash:file(md5, Filename, maybe_compressed(Filename)) of
 			{ok, Digest} ->
 				ordsets:add_element({Filename, Digest}, Acc);
 			_ ->
@@ -219,6 +219,15 @@ maybe_cleanup(State=#state{digests=Digests, release=Release, request=undefined})
 	end;
 maybe_cleanup(State) ->
 	State.
+
+%% @private
+maybe_compressed(Filename) ->
+	case filename:extension(Filename) of
+		".gz" ->
+			[compressed];
+		_ ->
+			[]
+	end.
 
 %% @private
 maybe_poll(State=#state{last_checked=LastChecked}, Now) ->
